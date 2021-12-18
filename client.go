@@ -16,10 +16,11 @@ const (
 // Client represents the tus client.
 // You can use it in goroutines to create parallels uploads.
 type Client struct {
-	Config  *Config
-	Url     string
-	Version string
-	Header  http.Header
+	Config   *Config
+	Url      string
+	Version  string
+	Header   http.Header
+	Response []byte
 
 	client *http.Client
 }
@@ -201,6 +202,17 @@ func (c *Client) uploadChunck(url string, body io.Reader, size int64, offset int
 	defer res.Body.Close()
 
 	switch res.StatusCode {
+	case 200:
+		if newOffset, err := strconv.ParseInt(res.Header.Get("Upload-Offset"), 10, 64); err == nil {
+			Response, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				return -1, err
+			}
+			c.Response = Response
+			return newOffset, nil
+		} else {
+			return -1, err
+		}
 	case 204:
 		if newOffset, err := strconv.ParseInt(res.Header.Get("Upload-Offset"), 10, 64); err == nil {
 			return newOffset, nil
