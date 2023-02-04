@@ -109,6 +109,7 @@ func (c *Client) CreateUpload(u *Upload) (*Uploader, error) {
 	case 413:
 		return nil, ErrLargeUpload
 	default:
+		c.Response, _ = ioutil.ReadAll(res.Body)
 		return nil, newClientError(res)
 	}
 }
@@ -226,6 +227,7 @@ func (c *Client) uploadChunck(url string, body io.Reader, size int64, offset int
 	case 413:
 		return -1, ErrLargeUpload
 	default:
+		c.Response, _ = ioutil.ReadAll(res.Body)
 		return -1, newClientError(res)
 	}
 }
@@ -259,6 +261,7 @@ func (c *Client) getUploadOffset(url string) (int64, error) {
 	case 412:
 		return -1, ErrVersionMismatch
 	default:
+		c.Response, _ = ioutil.ReadAll(res.Body)
 		return -1, newClientError(res)
 	}
 }
